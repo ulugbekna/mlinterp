@@ -17,5 +17,6 @@ let add state v = BatDynArray.add state v ; BatDynArray.length state - 1
 
 (** Get the value from the state at the given index. *)
 let get = BatDynArray.get
+
 (** Set the value at the given index in the state. *)
 let set = BatDynArray.set
