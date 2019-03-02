@@ -90,7 +90,7 @@ and run_expression state ctx exp =
   | Pexp_construct (ident, exp_opt) ->
     let val_opt = BatOption.bind exp_opt (BatOption.some % run_expression state ctx) in
     let name = Longident.last ident.txt in
-    (** Check if the given constructor is a module name or an actual constructor. *)
+    (* Check if the given constructor is a module name or an actual constructor. *)
     begin
       try
         match run_identifier state ctx ident.txt with
@@ -432,7 +432,7 @@ and run_structure_item state ctx item =
     let func ctx idx =
       let alloc = match State.get state idx with
       | State.Normal _ as n -> n (* not supposed to happen *)
-      | State.Prealloc (exp, ctx') -> State.Prealloc (exp, ctx) in
+      | State.Prealloc (exp, _) -> State.Prealloc (exp, ctx) in (* ambiguous piece of code *)
       State.set state idx alloc in
     BatList.iter (func ctx') indices ;
     (ctx', Value.nil)
