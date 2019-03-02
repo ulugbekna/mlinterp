@@ -100,7 +100,7 @@ let rec concat va vb =
   | Value.Sumtype ("::", Some (Value.Tuple l)) -> f l
   | _ -> raise Value.TypeError in
 
-  let aux l1 l2 =
+  let aux l1 _ =
     match l1 with
     | x :: [xs] when xs = empty -> cons (x :: [vb])
     | x :: [xs] ->
