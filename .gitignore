@@ -1,3 +1,2 @@
-*.cmo
-*.cmi
-mlinterp
+.merlin
+_build

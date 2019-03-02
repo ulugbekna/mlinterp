@@ -1,0 +1,3 @@
+(executable
+    (name main)
+    (libraries batteries compiler-libs.common))
