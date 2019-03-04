@@ -24,6 +24,7 @@ let rec run_identifier state ctx = function
   |> value_of_alloc state
 | Ldot (path, id) -> (* module *)
   begin
+    (* print_endline "d: Interpreter.run_identifier - Ldot" ; *)
     match run_identifier state ctx path with
     | Value.Module md ->
       let idx = BatMap.find id md in
@@ -35,18 +36,25 @@ let rec run_identifier state ctx = function
 
 (** This function interprets an expression and returns the computed value. *)
 and run_expression state ctx exp =
+  print_endline "d: Interpreter.run_expression" ;
   match exp.pexp_desc with
-  | Pexp_constant cst -> run_constant cst
+  | Pexp_constant cst -> 
+    print_endline "d: Interpreter.run_expression - Pexp_constant " ;
+    run_constant cst
 
   | Pexp_ident l ->
+    print_endline "d: Interpreter.run_expression - Pexp_ident " ;
     let id = l.txt in
     run_identifier state ctx id
 
   | Pexp_let (rec_flag, bindings, expr) ->
+    print_endline "d: Interpreter.run_expression - Pexp_let " ;
     let ctx' = run_let_binding state ctx rec_flag bindings in
     run_expression state ctx' expr
 
-  | Pexp_tuple exprs -> Value.Tuple (BatList.map (run_expression state ctx) exprs)
+  | Pexp_tuple exprs -> 
+    (* print_endline "d: Interpreter.run_expression - Pexp_tuple" ; *)
+    Value.Tuple (BatList.map (run_expression state ctx) exprs)
 
   | Pexp_array exprs ->
     let lst = BatList.map (run_expression state ctx) exprs in
@@ -101,6 +109,7 @@ and run_expression state ctx exp =
     end
 
   | Pexp_record (fields, with_clause) ->
+    (* print_endline "d: Interpreter.run_expression - Pexp_record" ; *)
     (* Get the base record (given by the "with" keyword) if any. *)
     let base = match with_clause with
     | None -> BatMap.empty
@@ -351,8 +360,10 @@ and match_many_pattern state ctx value = function
 (** This function evaluates every given let expression and stores the resulting bindings
  * in the context given in parameter. It returns the new context. *)
 and run_let_binding state ctx rec_flag bindings =
+  print_endline "d: Interpreter.run_let_binding ";  
   let prealloc ctx binding =
     if rec_flag = Recursive then
+      let () = print_endline "d: Interpreter.run_let_binding - rec" in
       let alloc = State.Prealloc (binding.pvb_expr, ctx) in
       let id = match binding.pvb_pat.ppat_desc with
       | Ppat_var l -> l.txt
@@ -362,6 +373,7 @@ and run_let_binding state ctx rec_flag bindings =
       State.set state idx @@ State.Prealloc (binding.pvb_expr, ctx') ;
       ctx'
     else
+      let () = print_endline "d: Interpreter.run_let_binding - nonrec" in     
       let value = run_expression state ctx binding.pvb_expr in
       match_pattern state ctx value binding.pvb_pat in
   BatList.fold_left prealloc ctx bindings
@@ -403,9 +415,12 @@ and run_module_expression state ctx mod_expr =
 (** This function executes a toplevel phrase. *)
 and run_structure_item state ctx item =
   match item.pstr_desc with
-  | Pstr_eval (exp, _) -> (ctx, run_expression state ctx exp)
+  | Pstr_eval (exp, _) -> 
+    print_endline "d: Interpreter.run_structure_item - Pstr_eval" ;
+    (ctx, run_expression state ctx exp)
 
   | Pstr_value (rec_flag, bindings) ->
+    print_endline "d: Interpreter.run_structure_item - Pstr_value" ;
     let ctx' = run_let_binding state ctx rec_flag bindings in
     (ctx', Value.nil)
 
@@ -475,5 +490,5 @@ and run_structure state ctx =
 
 (** This function computes a value from its allocation in the state. *)
 and value_of_alloc state = function
-| State.Normal v -> v
-| State.Prealloc (exp, ctx) -> run_expression state ctx exp
+  | State.Normal v -> v
+  | State.Prealloc (exp, ctx) -> run_expression state ctx exp

@@ -60,6 +60,19 @@ let print_value state v =
   let ty = type_of_value v in
   print_endline @@ "val " ^ string_of_value state v ^ " : " ^ ty
 
+(** Print the name, value, and type of new bindings in stdout *) 
+let print_labeled_values state bindings =
+  let to_value idx = 
+    match State.get state idx with
+    | State.Normal v -> v
+    | State.Prealloc (_, _) -> 
+      failwith "ValueUtils.print_labeled_values failed" in (* I think this case is impossible *)
+  let print_labeled_value (label, idx) = 
+    let v = to_value idx in
+    print_endline @@ 
+      "val " ^ label ^ " : " ^ type_of_value v ^ " = " ^ string_of_value state v in
+  List.iter print_labeled_value bindings
+
 (** Equality check between two Value.t. *)
 let rec value_eq a b = match (a, b) with
 | (Int i1, Int i2) -> i1 = i2

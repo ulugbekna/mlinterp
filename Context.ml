@@ -26,6 +26,10 @@ let member id ctx = BatList.map (BatMap.mem id) ctx.opened_modules
 (** Retrieve the inner map of a context. *)
 let to_map ctx = ctx.map
 
+(** Get new bindings in the new context by comparing it with the old one.  *)
+let get_new_bindings old_ctx new_ctx = 
+  BatMap.bindings @@ BatMap.diff new_ctx.map old_ctx.map
+
 (** Build a context from the given map. *)
 let from_map map = { map = map ; opened_modules = [] }
 

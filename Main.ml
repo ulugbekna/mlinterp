@@ -57,8 +57,10 @@ let rec repl state ctx =
     | Parsetree.Ptop_def strct ->
       let ctx'' = try
         let (ctx', value) = Interpreter.run_structure state ctx strct in
-        ValueUtils.print_value state value ;
-        ctx'
+        let new_bindings = Context.get_new_bindings ctx ctx' in
+        match new_bindings with
+        | [] -> ValueUtils.print_value state value; ctx'
+        | _ -> ValueUtils.print_labeled_values state new_bindings; ctx'
       with
       | Interpreter.NotImplemented -> print_endline "Feature not implemented yet." ; ctx
       | Interpreter.MatchFailureException -> print_endline "Matching failure" ; ctx
